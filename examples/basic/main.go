@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"go-stockfish/stockfish"
+	"github.com/RajanDhamala/go-stockfish/stockfish"
 )
 
 func main() {
