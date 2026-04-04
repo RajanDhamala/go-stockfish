@@ -18,6 +18,7 @@ defer client.Close(context.Background())
 result, err := client.Evaluate(context.Background(), stockfish.EvalRequest{
     FEN:      "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
     MoveTime: 300 * time.Millisecond,
+    // Depth:   16, // optional: depth search with movetime fallback
     MultiPV:  3,
 })
 if err != nil { /* handle */ }
@@ -32,6 +33,7 @@ for _, line := range result.Lines {
 
 - FEN input is normalized and validated as single-line data to prevent command-injection via newline-separated UCI commands.
 - `MaxMultiPV` bounds per-request line count (`EvalRequest.MultiPV`) to prevent resource abuse.
+- Depth-based requests use `go depth <N> movetime <ms>` so they still have a time fallback (`MoveTime` or `JobTimeout`, default 5s).
 - Engine process wait state is synchronized to avoid races in concurrent shutdown/error paths.
 
 ## Architecture

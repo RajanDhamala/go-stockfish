@@ -143,19 +143,20 @@ func (e *Engine) Evaluate(ctx context.Context, request EvalRequest) (EvalResult,
 		return EvalResult{}, err
 	}
 
+	moveTime := request.MoveTime
+	if moveTime <= 0 {
+		moveTime = e.cfg.jobTimeout
+	}
+	moveMillis := int(moveTime.Milliseconds())
+	if moveMillis < 1 {
+		moveMillis = 1
+	}
+
 	if request.Depth > 0 {
-		if err := e.send("go depth " + strconv.Itoa(request.Depth)); err != nil {
+		if err := e.send("go depth " + strconv.Itoa(request.Depth) + " movetime " + strconv.Itoa(moveMillis)); err != nil {
 			return EvalResult{}, err
 		}
 	} else {
-		moveTime := request.MoveTime
-		if moveTime <= 0 {
-			moveTime = e.cfg.jobTimeout
-		}
-		moveMillis := int(moveTime.Milliseconds())
-		if moveMillis < 1 {
-			moveMillis = 1
-		}
 		if err := e.send("go movetime " + strconv.Itoa(moveMillis)); err != nil {
 			return EvalResult{}, err
 		}
