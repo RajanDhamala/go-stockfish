@@ -16,7 +16,7 @@ const (
 	defaultHashMB          = 16
 	defaultMaxMultiPV      = 5
 	maxAllowedMultiPV      = 256
-	defaultJobTimeout      = 5 * time.Second
+	defaultJobTimeout      = 10 * time.Second
 	defaultStartTimeout    = 5 * time.Second
 	defaultShutdownTimeout = 5 * time.Second
 	defaultMaxRestarts     = 1
