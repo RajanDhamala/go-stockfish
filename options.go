@@ -43,6 +43,8 @@ type Client struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
+	mu        sync.RWMutex
+	closed    bool
 	wg        sync.WaitGroup
 	closeOnce sync.Once
 }
@@ -132,11 +134,20 @@ func (c *Client) Evaluate(ctx context.Context, request EvalRequest) (EvalResult,
 		response: make(chan evalResponse, 1),
 	}
 
+	c.mu.RLock()
+	if c.closed {
+		c.mu.RUnlock()
+		return EvalResult{}, ErrClientClosed
+	}
+
 	select {
 	case <-c.ctx.Done():
+		c.mu.RUnlock()
 		return EvalResult{}, ErrClientClosed
 	case c.jobs <- job:
+		c.mu.RUnlock()
 	default:
+		c.mu.RUnlock()
 		return EvalResult{}, ErrQueueFull
 	}
 
@@ -157,8 +168,11 @@ func (c *Client) Close(ctx context.Context) error {
 
 	var closeErr error
 	c.closeOnce.Do(func() {
+		c.mu.Lock()
+		c.closed = true
 		c.cancel()
 		close(c.jobs)
+		c.mu.Unlock()
 
 		done := make(chan struct{})
 		go func() {
